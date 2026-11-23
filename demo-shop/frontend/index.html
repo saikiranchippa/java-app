@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Shop</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 1rem;color:#222}
+  section{border:1px solid #ddd;border-radius:8px;padding:1rem;margin-bottom:1rem}
+  input,button{padding:.4rem .6rem;margin:.2rem}
+  pre{background:#f6f6f6;padding:.6rem;border-radius:6px;overflow:auto}
+</style>
+</head>
+<body>
+<h1>Demo Shop</h1>
+
+<section>
+  <h2>Users</h2>
+  <input id="uname" placeholder="name"><input id="uemail" placeholder="email">
+  <button onclick="addUser()">Add</button>
+  <pre id="users"></pre>
+</section>
+
+<section>
+  <h2>Products</h2>
+  <input id="pname" placeholder="name"><input id="pprice" type="number" placeholder="price">
+  <button onclick="addProduct()">Add</button>
+  <pre id="products"></pre>
+</section>
+
+<section>
+  <h2>Orders</h2>
+  <input id="ouser" type="number" placeholder="user id"><input id="oprod" type="number" placeholder="product id"><input id="oqty" type="number" placeholder="qty">
+  <button onclick="addOrder()">Place order</button>
+  <pre id="orders"></pre>
+</section>
+
+<script>
+async function load(path, el){
+  const r = await fetch(path);
+  document.getElementById(el).textContent = JSON.stringify(await r.json(), null, 2);
+}
+const post = (path, body) => fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+const v = id => document.getElementById(id).value;
+
+async function addUser(){ await post('/api/users', {name:v('uname'), email:v('uemail')}); refresh(); }
+async function addProduct(){ await post('/api/products', {name:v('pname'), price:Number(v('pprice'))}); refresh(); }
+async function addOrder(){
+  const r = await post('/api/orders', {userId:Number(v('ouser')), productId:Number(v('oprod')), quantity:Number(v('oqty'))});
+  if(!r.ok) alert(await r.text());
+  refresh();
+}
+function refresh(){ load('/api/users','users'); load('/api/products','products'); load('/api/orders','orders'); }
+refresh();
+</script>
+</body>
+</html>
